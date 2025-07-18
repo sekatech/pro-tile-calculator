@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SekaTech Pro Tile Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: #f8fafc;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 22px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculator {
+            background: white;
+            border-radius: 24px 24px 0 0;
+            margin: 0;
+            padding: 24px;
+            box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.08);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 16px 0 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+            margin-left: 12px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #475569;
+            font-weight: 500;
+        }
+        
+        .input-wrapper {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .input-wrapper:focus-within {
+            transform: translateY(-2px);
+        }
+        
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: white;
+        }
+        
+        .unit-badge {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #475569;
+            font-weight: 500;
+        }
+        
+        .results {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .result-label {
+            color: #64748b;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .result-label .info-icon {
+            margin-left: 6px;
+            cursor: help;
+            color: #94a3b8;
+        }
+        
+        .result-value {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .primary-btn {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        
+        .primary-btn:hover {
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+        }
+        
+        .secondary-btn {
+            background: white;
+            color: #2563eb;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .secondary-btn:hover {
+            background: #f8fafc;
+        }
+        
+        .visualization {
+            height: 180px;
+            background: #f1f5f9;
+            border-radius: 16px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tile-sample {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 10px;
+            transform: rotate(45deg);
+            opacity: 0.9;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: rotate(45deg) scale(1); }
+            50% { transform: rotate(45deg) scale(1.05); }
+        }
+        
+        .tile-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+            gap: 3px;
+            padding: 12px;
+        }
+        
+        .tile-cell {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 3px;
+            transition: all 0.5s ease;
+            transform: scale(0);
+            animation: tileAppear 0.5s ease-out forwards;
+        }
+        
+        @keyframes tileAppear {
+            to { transform: scale(1); }
+        }
+        
+        .tile-cell.filled {
+            background: rgba(59, 130, 246, 0.3);
+            box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2);
+        }
+        
+        .explanation {
+            margin-top: 24px;
+            padding: 16px;
+            background: #f1f5f9;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #475569;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .explanation h4 {
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .language-tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 12px;
+        }
+        
+        .language-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .language-tab.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+            font-weight: 500;
+        }
+        
+        .language-content {
+            display: none;
+        }
+        
+        .language-content.active {
+            display: block;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            max-width: 250px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #1e293b transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        SekaTech Pro Tile Calculator
+    </div>
+    
+    <div class="calculator">
+        <div class="section-title">Surface Dimensions</div>
+        <div class="input-group">
+            <label>Width of Area to Tile</label>
+            <div class="input-wrapper">
+                <input type="number" id="area-width" placeholder="Enter width">
+                <span class="unit-badge">meters</span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Length of Area to Tile</label>
+            <div class="input-wrapper">
+                <input type="number" id="area-length" placeholder="Enter length">
+                <span class="unit-badge">meters</span>
+            </div>
+        </div>
+        
+        <div class="section-title">Tile Specifications</div>
+        <div class="input-group">
+            <label>Tile Width</label>
+            <div class="input-wrapper">
+                <input type="number" id="tile-width" placeholder="Enter tile width">
+                <span class="unit-badge">centimeters</span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Tile Length</label>
+            <div class="input-wrapper">
+                <input type="number" id="tile-length" placeholder="Enter tile length">
+                <span class="unit-badge">centimeters</span>
+            </div>
+        </div>
+        
+        <div class="section-title">Project Details</div>
+        <div class="input-group">
+            <label>Tiles per Carton/Package</label>
+            <div class="input-wrapper">
+                <input type="number" id="tiles-per-carton" placeholder="Enter quantity" value="10">
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Wastage Percentage</label>
+            <div class="input-wrapper">
+                <input type="number" id="wastage" placeholder="Recommended 10%" value="10">
+                <span class="unit-badge">%</span>
+            </div>
+        </div>
+        
+        <div class="visualization">
+            <div class="tile-sample"></div>
+            <div class="tile-grid" id="tile-grid"></div>
+        </div>
+        
+        <div class="results" id="results" style="display: none;">
+            <div class="result-row">
+                <span class="result-label">
+                    Total Area
+                    <span class="info-icon" data-tooltip="The total surface area to be tiled">ⓘ</span>
+                </span>
+                <span class="result-value" id="total-area">0 m²</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">
+                    Tiles Needed
+                    <span class="info-icon" data-tooltip="Total tiles required including wastage">ⓘ</span>
+                </span>
+                <span class="result-value" id="tiles-needed">0</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">
+                    Cartons Needed
+                    <span class="info-icon" data-tooltip="Number of packages to purchase">ⓘ</span>
+                </span>
+                <span class="result-value" id="cartons-needed">0</span>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="secondary-btn" id="reset-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+                    <path d="M19 7L18.2929 6.29289L19 5.58579L19.7071 6.29289L19 7ZM5 17V18H6V17H5ZM6.29289 13.2929L5.58579 12.5858L4.87868 13.2929L5.58579 14L6.29289 13.2929ZM18.2929 6.29289L5.58579 19L6.29289 19.7071L19 7.70711L18.2929 6.29289ZM19.7071 6.29289L6.29289 19.7071L5.58579 19L18.2929 6.29289L19.7071 6.29289ZM5 16H12V18H5V16Z" fill="#2563eb"/>
+                </svg>
+                Reset
+            </button>
+            <button class="primary-btn" id="calculate-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+                    <path d="M7 10L12 15L17 10H7Z" fill="white"/>
+                </svg>
+                Calculate
+            </button>
+        </div>
+        
+        <div class="explanation" id="explanation" style="display: none;">
+            <div class="language-tabs">
+                <div class="language-tab active" data-lang="en">English</div>
+                <div class="language-tab" data-lang="fr">Français</div>
+            </div>
+            
+            <div class="language-content active" data-lang="en">
+                <h4>Project Summary</h4>
+                <p>This calculation estimates the number of tiles needed for your project. The wastage percentage accounts for cutting, breakage, and future repairs. For best results:</p>
+                <ul style="padding-left: 20px; margin-top: 8px;">
+                    <li>Add 5-10% wastage for simple layouts</li>
+                    <li>Add 10-15% for diagonal or complex patterns</li>
+                    <li>Buy extra tiles for future repairs (same production batch)</li>
+                </ul>
+            </div>
+            
+            <div class="language-content" data-lang="fr">
+                <h4>Résumé du Projet</h4>
+                <p>Ce calcul estime le nombre de carreaux nécessaires pour votre projet. Le pourcentage de perte tient compte des coupes, des casses et des réparations futures. Pour de meilleurs résultats :</p>
+                <ul style="padding-left: 20px; margin-top: 8px;">
+                    <li>Ajoutez 5-10% de perte pour des dispositions simples</li>
+                    <li>Ajoutez 10-15% pour des motifs diagonaux ou complexes</li>
+                    <li>Achetez des carreaux supplémentaires pour les réparations futures (même lot de production)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const calculateBtn = document.getElementById('calculate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const results = document.getElementById('results');
+        const tileGrid = document.getElementById('tile-grid');
+        const explanation = document.getElementById('explanation');
+        const tooltip = document.getElementById('tooltip');
+        
+        // Input fields
+        const inputs = [
+            document.getElementById('area-width'),
+            document.getElementById('area-length'),
+            document.getElementById('tile-width'),
+            document.getElementById('tile-length'),
+            document.getElementById('tiles-per-carton'),
+            document.getElementById('wastage')
+        ];
+        
+        // Result fields
+        const totalArea = document.getElementById('total-area');
+        const tilesNeeded = document.getElementById('tiles-needed');
+        const cartonsNeeded = document.getElementById('cartons-needed');
+        
+        // Language tabs
+        const languageTabs = document.querySelectorAll('.language-tab');
+        
+        // Tooltip elements
+        const infoIcons = document.querySelectorAll('.info-icon');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            calculateBtn.addEventListener('click', calculateTiles);
+            resetBtn.addEventListener('click', resetCalculator);
+            
+            // Calculate on Enter key
+            inputs.forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') calculateTiles();
+                });
+            });
+            
+            // Language tab switching
+            languageTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const lang = this.dataset.lang;
+                    
+                    // Update active tab
+                    languageTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show correct content
+                    document.querySelectorAll('.language-content').forEach(content => {
+                        content.classList.remove('active');
+                        if (content.dataset.lang === lang) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Tooltip functionality
+            infoIcons.forEach(icon => {
+                icon.addEventListener('mouseenter', showTooltip);
+                icon.addEventListener('mouseleave', hideTooltip);
+            });
+            
+            // Demo values for testing
+            inputs[0].value = '5';
+            inputs[1].value = '4';
+            inputs[2].value = '30';
+            inputs[3].value = '30';
+        });
+        
+        // Main calculation function
+        function calculateTiles() {
+            // Get values
+            const width = parseFloat(inputs[0].value);
+            const length = parseFloat(inputs[1].value);
+            const tWidth = parseFloat(inputs[2].value) / 100; // cm to m
+            const tLength = parseFloat(inputs[3].value) / 100; // cm to m
+            const tPerCarton = parseInt(inputs[4].value);
+            const wastagePercent = parseFloat(inputs[5].value);
+            
+            // Validate
+            if (!width || !length || !tWidth || !tLength) {
+                showError("Please fill in all required fields");
+                return;
+            }
+            
+            if (width <= 0 || length <= 0 || tWidth <= 0 || tLength <= 0) {
+                showError("All dimensions must be greater than zero");
+                return;
+            }
+            
+            // Calculate
+            const area = width * length;
+            const tileArea = tWidth * tLength;
+            let tiles = Math.ceil(area / tileArea);
+            tiles += Math.ceil(tiles * (wastagePercent / 100));
+            const cartons = Math.ceil(tiles / tPerCarton);
+            
+            // Display results
+            totalArea.textContent = area.toFixed(2) + ' m²';
+            tilesNeeded.textContent = tiles;
+            cartonsNeeded.textContent = cartons;
+            
+            // Show results and explanation
+            results.style.display = 'block';
+            explanation.style.display = 'block';
+            
+            // Generate visualization
+            generateTileGrid(width, length, tWidth, tLength);
+            
+            // Scroll to results
+            results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Generate tile grid visualization
+        function generateTileGrid(width, length, tWidth, tLength) {
+            tileGrid.innerHTML = '';
+            
+            const cols = Math.floor(width / tWidth);
+            const rows = Math.floor(length / tLength);
+            
+            tileGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
+            // Create filled tiles
+            for (let i = 0; i < cols * rows; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile-cell filled';
+                tile.style.animationDelay = `${i * 0.05}s`;
+                tileGrid.appendChild(tile);
+            }
+            
+            // Create partial tiles for edges
+            const remainingX = width % tWidth;
+            const remainingY = length % tLength;
+            
+            if (remainingX > 0) {
+                for (let y = 0; y < rows; y++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile-cell';
+                    tile.style.gridColumn = cols + 1;
+                    tile.style.gridRow = y + 1;
+                    tile.style.width = `${(remainingX / tWidth) * 100}%`;
+                    tile.style.opacity = '0.6';
+                    tile.style.animationDelay = `${(cols * rows + y) * 0.05}s`;
+                    tileGrid.appendChild(tile);
+                }
+            }
+            
+            if (remainingY > 0) {
+                for (let x = 0; x < cols; x++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile-cell';
+                    tile.style.gridColumn = x + 1;
+                    tile.style.gridRow = rows + 1;
+                    tile.style.height = `${(remainingY / tLength) * 100}%`;
+                    tile.style.opacity = '0.6';
+                    tile.style.animationDelay = `${(cols * rows + x) * 0.05}s`;
+                    tileGrid.appendChild(tile);
+                }
+            }
+        }
+        
+        // Reset calculator
+        function resetCalculator() {
+            inputs.forEach(input => {
+                if (input.id !== 'tiles-per-carton' && input.id !== 'wastage') {
+                    input.value = '';
+                } else {
+                    input.value = input.id === 'tiles-per-carton' ? '10' : '10';
+                }
+            });
+            
+            results.style.display = 'none';
+            explanation.style.display = 'none';
+            tileGrid.innerHTML = '';
+        }
+        
+        // Show error message
+        function showError(message) {
+            alert(message); // In a real app, you'd use a nicer notification system
+        }
+        
+        // Tooltip functions
+        function showTooltip(e) {
+            const tooltipText = e.target.dataset.tooltip;
+            if (!tooltipText) return;
+            
+            tooltip.textContent = tooltipText;
+            tooltip.style.left = `${e.target.getBoundingClientRect().left}px`;
+            tooltip.style.top = `${e.target.getBoundingClientRect().top - 40}px`;
+            tooltip.style.opacity = '1';
+        }
+        
+        function hideTooltip() {
+            tooltip.style.opacity = '0';
+        }
+    </script>
+</body>
+</html>
